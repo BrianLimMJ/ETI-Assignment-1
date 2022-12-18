@@ -1,6 +1,7 @@
 package Users
 
 import (
+	Trips "Assignment/Trip"
 	"bufio"
 	"database/sql"
 	"fmt"
@@ -137,46 +138,54 @@ func LogInAsDriver() {
 		for result.Next() {
 			var DriverInfo Drivers
 			err = result.Scan(&DriverInfo.driverId, &DriverInfo.firstName, &DriverInfo.lastName, &DriverInfo.mobileNo, &DriverInfo.emailAdd, &DriverInfo.identificationNo, &DriverInfo.licenseNo, &DriverInfo.isDriving)
+			x := strconv.Itoa(DriverInfo.mobileNo)
 			if err != nil {
 				fmt.Println("Unsuccessful Login")
 				panic(err.Error())
 
-			} else {
+			} else if x == DriverMobileNo {
 				loggedInDriver = DriverInfo
 				// To notify of successful login
 				fmt.Println("====================")
 				fmt.Println("Successfully logged into " + DriverInfo.firstName)
+				// Logged in as Driver section
+			loggedIn:
+				for {
+					fmt.Print("\n")
+					fmt.Println("====================")
+					fmt.Println("You are now logged in as a Driver\n",
+						"1.Update Driver Account\n",
+						"2.Check for assigned trips\n",
+						"3.Start Trip\n",
+						"4.End Trip\n",
+						"9.Quit\n")
+					fmt.Println("====================")
+
+					fmt.Print("Enter an option: ")
+					var choice string
+					reader := bufio.NewReader(os.Stdin)
+					input, _ := reader.ReadString('\n')
+					choice = strings.TrimSpace(input)
+
+					switch choice {
+					case "1":
+						UpdateDriverAccount()
+					case "2":
+						Trips.CheckTrip(loggedInDriver.driverId)
+					case "3":
+						Trips.StartTrip(loggedInDriver.driverId)
+					case "4":
+						Trips.EndTrip(loggedInDriver.driverId)
+					case "9":
+						break loggedIn
+					}
+				}
+			} else {
+
 			}
 		}
 	}
-	// Logged in as Driver section
-loggedIn:
-	for {
-		fmt.Print("\n")
-		fmt.Println("====================")
-		fmt.Println("You are now logged in as a Driver\n",
-			"1.Update Driver Account\n",
-			"2.Request Trip\n",
-			"9.Quit\n")
-		fmt.Println("====================")
 
-		fmt.Print("Enter an option: ")
-		var choice string
-		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		choice = strings.TrimSpace(input)
-
-		switch choice {
-		case "1":
-			UpdateDriverAccount()
-		case "2":
-			//LogInAsPassenger()
-		case "3":
-			//login()
-		case "9":
-			break loggedIn
-		}
-	}
 }
 
 // Updating of Driver account

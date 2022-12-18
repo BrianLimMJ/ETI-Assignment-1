@@ -1,6 +1,7 @@
 package Users
 
 import (
+	Trips "Assignment/Trip"
 	"bufio"
 	"database/sql"
 	"fmt"
@@ -126,46 +127,51 @@ func LogInAsPassenger() {
 		for result.Next() {
 			var PassengerInfo Passengers
 			err = result.Scan(&PassengerInfo.passengerID, &PassengerInfo.firstName, &PassengerInfo.lastName, &PassengerInfo.mobileNo, &PassengerInfo.emailAdd)
+			x := strconv.Itoa(PassengerInfo.mobileNo)
 			if err != nil {
 				fmt.Println("Unsuccessful Login")
 				panic(err.Error())
 
-			} else {
+			} else if x == PassengerMobileNo {
 				loggedInPassenger = PassengerInfo
 				// To notify of successful login
 				fmt.Println("====================")
 				fmt.Println("Successfully logged into " + PassengerInfo.firstName)
+				// Logged in as Passenger section
+			loggedIn:
+				for {
+					fmt.Print("\n")
+					fmt.Println("====================")
+					fmt.Println("You are now logged in as a Passenger\n",
+						"1.Update Passenger Account\n",
+						"2.Request Trip\n",
+						"3.Retrieve Trips\n",
+						"9.Quit\n")
+					fmt.Println("====================")
+
+					fmt.Print("Enter an option: ")
+					var choice string
+					reader := bufio.NewReader(os.Stdin)
+					input, _ := reader.ReadString('\n')
+					choice = strings.TrimSpace(input)
+
+					switch choice {
+					case "1":
+						UpdatePassengerAccount()
+					case "2":
+						Trips.RequestTrip(loggedInPassenger.passengerID)
+					case "3":
+						Trips.RetriveTrips(loggedInPassenger.passengerID)
+					case "9":
+						break loggedIn
+					}
+				}
+			} else {
+				fmt.Println("No such account")
 			}
 		}
 	}
-	// Logged in as Passenger section
-loggedIn:
-	for {
-		fmt.Print("\n")
-		fmt.Println("====================")
-		fmt.Println("You are now logged in as a Passenger\n",
-			"1.Update Passenger Account\n",
-			"2.Request Trip\n",
-			"9.Quit\n")
-		fmt.Println("====================")
 
-		fmt.Print("Enter an option: ")
-		var choice string
-		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		choice = strings.TrimSpace(input)
-
-		switch choice {
-		case "1":
-			UpdatePassengerAccount()
-		case "2":
-			LogInAsPassenger()
-		case "3":
-			//login()
-		case "9":
-			break loggedIn
-		}
-	}
 }
 
 // Updating of Passenger Account
