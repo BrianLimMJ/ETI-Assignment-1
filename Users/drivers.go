@@ -3,8 +3,11 @@ package Users
 import (
 	Trips "Assignment/Trip"
 	"bufio"
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -87,27 +90,41 @@ func CreateDriverAccount() {
 	input, _ = reader.ReadString('\n')
 	newDriver.licenseNo = strings.TrimSpace(input)
 
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
-
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
+	client := &http.Client{}
+	url := "https://localhost:5000/Driver"
+	postBody, _ := json.Marshal(newDriver)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("POST", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Driver account has been successfully created")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
+			}
+		}
 	}
-	defer db.Close()
 
-	//Inserting data into database
-	_, err = db.Exec("insert into drivers (firstName, lastName, mobileNo, emailAdd, identificationNo, licenseNo) values(?, ?, ?, ?, ?, ?)",
-		newDriver.firstName, newDriver.lastName, newDriver.mobileNo, newDriver.emailAdd, newDriver.identificationNo, newDriver.licenseNo)
-	if err != nil {
-		fmt.Println("Error in sending data to database")
-		panic(err.Error())
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
 
-	} else {
-		// To notify of successful account creation
-		fmt.Println("====================")
-		fmt.Println("Driver account has been successfully created")
-	}
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
+
+	// //Inserting data into database
+	// _, err = db.Exec("insert into drivers (firstName, lastName, mobileNo, emailAdd, identificationNo, licenseNo) values(?, ?, ?, ?, ?, ?)",
+	// 	newDriver.firstName, newDriver.lastName, newDriver.mobileNo, newDriver.emailAdd, newDriver.identificationNo, newDriver.licenseNo)
+	// if err != nil {
+	// 	fmt.Println("Error in sending data to database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	// To notify of successful account creation
+	// 	fmt.Println("====================")
+	// 	fmt.Println("Driver account has been successfully created")
+	// }
 
 }
 
@@ -218,33 +235,46 @@ func UpdateDriverAccount() {
 	input, _ = reader.ReadString('\n')
 	newDriver.licenseNo = strings.TrimSpace(input)
 
-	//Calling of database
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
-
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
+	client := &http.Client{}
+	url := "https://localhost:5000/Driver"
+	postBody, _ := json.Marshal(newDriver)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("PATCH", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Driver account has been successfully modified")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
+			}
+		}
 	}
-	defer db.Close()
+	// //Calling of database
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
 
-	//Inserting values into database
-	Stmt, err := db.Prepare("update drivers set firstName = ?,lastName = ?, mobileNo = ?, emailAdd = ?, licenseNo = ? where driverId = ?")
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
 
-	if err != nil {
-		fmt.Println("Error with sending data to database")
-		panic(err.Error())
+	// //Inserting values into database
+	// Stmt, err := db.Prepare("update drivers set firstName = ?,lastName = ?, mobileNo = ?, emailAdd = ?, licenseNo = ? where driverId = ?")
 
-	}
-	defer Stmt.Close()
-	_, err = Stmt.Exec(newDriver.firstName, newDriver.lastName, newDriver.mobileNo, newDriver.emailAdd, newDriver.licenseNo, loggedInDriver.driverId)
-	if err != nil {
-		fmt.Println("Error with sending data to database")
-		panic(err.Error())
+	// if err != nil {
+	// 	fmt.Println("Error with sending data to database")
+	// 	panic(err.Error())
 
-	} else {
-		// To notify of successful account creation
-		fmt.Println("====================")
-		fmt.Println("Driver account has been successfully modified")
-	}
+	// }
+	// defer Stmt.Close()
+	// _, err = Stmt.Exec(newDriver.firstName, newDriver.lastName, newDriver.mobileNo, newDriver.emailAdd, newDriver.licenseNo, loggedInDriver.driverId)
+	// if err != nil {
+	// 	fmt.Println("Error with sending data to database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	// To notify of successful account creation
+	// 	fmt.Println("====================")
+	// 	fmt.Println("Driver account has been successfully modified")
+	// }
 }

@@ -2,8 +2,11 @@ package Trips
 
 import (
 	"bufio"
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -111,36 +114,51 @@ func RequestTrip(passengerID int) {
 
 // Checks available trips assigned to drivers using driverId
 func CheckTrip(driverId int) {
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db?parseTime=true")
 
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
-	}
-	defer db.Close()
-
-	//Checking for value in database
-	result, err := db.Query("select * from trips where driverId = ?", driverId)
-	if err != nil {
-		fmt.Println("Error with getting data from database")
-		panic(err.Error())
-
-	} else {
-		for result.Next() {
-			var newTrip Trips
-			err = result.Scan(&newTrip.driverId, &newTrip.passengerId, &newTrip.driverId, &newTrip.startPostal, &newTrip.endPostal, &newTrip.isStarted, &newTrip.isCompleted, &newTrip.timeCreated)
-			if err != nil {
-				fmt.Println("No jobs available")
-				panic(err.Error())
-
-			} else {
-
-				fmt.Println("====================")
-				fmt.Println("Your starting and ending postal ", newTrip.startPostal, newTrip.endPostal)
+	var newTrip Trips
+	client := &http.Client{}
+	url := "https://localhost:5000/Driver"
+	postBody, _ := json.Marshal(newTrip)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("GET", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Requesting Trips")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
 			}
 		}
 	}
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db?parseTime=true")
+
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
+
+	// //Checking for value in database
+	// result, err := db.Query("select * from trips where driverId = ?", driverId)
+	// if err != nil {
+	// 	fmt.Println("Error with getting data from database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	for result.Next() {
+	// 		var newTrip Trips
+	// 		err = result.Scan(&newTrip.driverId, &newTrip.passengerId, &newTrip.driverId, &newTrip.startPostal, &newTrip.endPostal, &newTrip.isStarted, &newTrip.isCompleted, &newTrip.timeCreated)
+	// 		if err != nil {
+	// 			fmt.Println("No jobs available")
+	// 			panic(err.Error())
+
+	// 		} else {
+
+	// 			fmt.Println("====================")
+	// 			fmt.Println("Your starting and ending postal ", newTrip.startPostal, newTrip.endPostal)
+	// 		}
+	// 	}
+	// }
 }
 
 // Start's trip assigned to driver
@@ -251,33 +269,47 @@ func EndTrip(driverId int) {
 
 // Display all previous trips associated with Passenger and the passengerId
 func RetriveTrips(passengerID int) {
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db?parseTime=true")
-
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
-	}
-	defer db.Close()
-
-	//Checking for value in database
-	result, err := db.Query("select * from trips where passengerId = ? Order by passengerId Desc", passengerID)
-	if err != nil {
-		fmt.Println("Error with getting data from database")
-		panic(err.Error())
-
-	} else {
-		for result.Next() {
-			var newTrip Trips
-			err = result.Scan(&newTrip.driverId, &newTrip.passengerId, &newTrip.driverId, &newTrip.startPostal, &newTrip.endPostal, &newTrip.isStarted, &newTrip.isCompleted, &newTrip.timeCreated)
-			if err != nil {
-				fmt.Println("No jobs available")
-				panic(err.Error())
-
-			} else {
-				fmt.Println(passengerID, newTrip.startPostal, newTrip.endPostal, newTrip.timeCreated)
-				continue
+	var newTrip Trips
+	client := &http.Client{}
+	url := "https://localhost:5000/Driver"
+	postBody, _ := json.Marshal(newTrip)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("GET", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Displaying all Trips")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
 			}
 		}
 	}
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db?parseTime=true")
+
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
+
+	// //Checking for value in database
+	// result, err := db.Query("select * from trips where passengerId = ? Order by passengerId Desc", passengerID)
+	// if err != nil {
+	// 	fmt.Println("Error with getting data from database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	for result.Next() {
+	// 		var newTrip Trips
+	// 		err = result.Scan(&newTrip.driverId, &newTrip.passengerId, &newTrip.driverId, &newTrip.startPostal, &newTrip.endPostal, &newTrip.isStarted, &newTrip.isCompleted, &newTrip.timeCreated)
+	// 		if err != nil {
+	// 			fmt.Println("No jobs available")
+	// 			panic(err.Error())
+
+	// 		} else {
+	// 			fmt.Println(passengerID, newTrip.startPostal, newTrip.endPostal, newTrip.timeCreated)
+	// 			continue
+	// 		}
+	// 	}
+	// }
 }

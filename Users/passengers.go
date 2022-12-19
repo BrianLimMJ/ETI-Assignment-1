@@ -3,8 +3,11 @@ package Users
 import (
 	Trips "Assignment/Trip"
 	"bufio"
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -76,28 +79,41 @@ func CreatePassengerAccount() {
 	input, _ = reader.ReadString('\n')
 	newPassenger.emailAdd = strings.TrimSpace(input)
 
-	//Calling of database
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
-
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
+	client := &http.Client{}
+	url := "https://localhost:5000/Passenger"
+	postBody, _ := json.Marshal(newPassenger)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("POST", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Passenger account has been successfully created")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
+			}
+		}
 	}
-	defer db.Close()
+	// //Calling of database
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
 
-	//Inserting values into database
-	_, err = db.Exec("insert into passengers (firstName, lastName, mobileNo, emailAdd) values(?, ?, ?, ?)",
-		newPassenger.firstName, newPassenger.lastName, newPassenger.mobileNo, newPassenger.emailAdd)
-	if err != nil {
-		fmt.Println("Error with sending data to database")
-		panic(err.Error())
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
 
-	} else {
-		// To notify of successful account creation
-		fmt.Println("====================")
-		fmt.Println("Passenger account has been successfully created")
-	}
+	// //Inserting values into database
+	// _, err = db.Exec("insert into passengers (firstName, lastName, mobileNo, emailAdd) values(?, ?, ?, ?)",
+	// 	newPassenger.firstName, newPassenger.lastName, newPassenger.mobileNo, newPassenger.emailAdd)
+	// if err != nil {
+	// 	fmt.Println("Error with sending data to database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	// To notify of successful account creation
+	// 	fmt.Println("====================")
+	// 	fmt.Println("Passenger account has been successfully created")
+	// }
 }
 
 // Logging in as Passenger
@@ -199,33 +215,46 @@ func UpdatePassengerAccount() {
 	input, _ = reader.ReadString('\n')
 	newPassenger.emailAdd = strings.TrimSpace(input)
 
-	//Calling of database
-	db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
-
-	// Error handling
-	if err != nil {
-		fmt.Println("Error in connecting to database")
-		panic(err.Error())
+	client := &http.Client{}
+	url := "https://localhost:5000/Passenger"
+	postBody, _ := json.Marshal(newPassenger)
+	resBody := bytes.NewBuffer(postBody)
+	if req, err := http.NewRequest("PATCH", url, resBody); err == nil {
+		if res, err2 := client.Do(req); err2 == nil {
+			if res.StatusCode == 202 {
+				fmt.Println("Passenger account has been successfully modified")
+			} else if res.StatusCode == 400 {
+				fmt.Println("Bad Request")
+			}
+		}
 	}
-	defer db.Close()
+	// //Calling of database
+	// db, err := sql.Open("mysql", "root:Pa$$w0rd@tcp(127.0.0.1:3306)/my_db")
 
-	//Inserting values into database
-	Stmt, err := db.Prepare("update passengers set firstName = ?,lastName = ?, mobileNo = ?, emailAdd = ? where passengerId = ?")
+	// // Error handling
+	// if err != nil {
+	// 	fmt.Println("Error in connecting to database")
+	// 	panic(err.Error())
+	// }
+	// defer db.Close()
 
-	if err != nil {
-		fmt.Println("Error with sending data to database")
-		panic(err.Error())
+	// //Inserting values into database
+	// Stmt, err := db.Prepare("update passengers set firstName = ?,lastName = ?, mobileNo = ?, emailAdd = ? where passengerId = ?")
 
-	}
-	defer Stmt.Close()
-	_, err = Stmt.Exec(newPassenger.firstName, newPassenger.lastName, newPassenger.mobileNo, newPassenger.emailAdd, loggedInPassenger.passengerID)
-	if err != nil {
-		fmt.Println("Error with sending data to database")
-		panic(err.Error())
+	// if err != nil {
+	// 	fmt.Println("Error with sending data to database")
+	// 	panic(err.Error())
 
-	} else {
-		// To notify of successful account creation
-		fmt.Println("====================")
-		fmt.Println("Passenger account has been successfully modified")
-	}
+	// }
+	// defer Stmt.Close()
+	// _, err = Stmt.Exec(newPassenger.firstName, newPassenger.lastName, newPassenger.mobileNo, newPassenger.emailAdd, loggedInPassenger.passengerID)
+	// if err != nil {
+	// 	fmt.Println("Error with sending data to database")
+	// 	panic(err.Error())
+
+	// } else {
+	// 	// To notify of successful account creation
+	// 	fmt.Println("====================")
+	// 	fmt.Println("Passenger account has been successfully modified")
+	// }
 }
